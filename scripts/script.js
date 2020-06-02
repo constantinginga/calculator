@@ -26,11 +26,22 @@ function divide(arr) {
 }
 
 
+function pwr(base, p) {
+    return base**p;
+}
+
+
+function round(value, decimals) {
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
+
+
 function operate(a, b, operator) {
     return (operator === '+') ? add([a, b])
         : (operator === '-') ? subtract([a, b])
         : (operator === '*') ? multiply([a, b])
         : (operator === '/') ? divide([a, b])
+        : (operator === '^') ? pwr(a, b)
         : 'Unexpected error';
 }
 
@@ -48,8 +59,12 @@ let screenValues = screen.innerHTML.split(''),
 numbers.forEach(number => {
     number.addEventListener('click', e => {
         operatorPresent = false;
-        if (!operatorPresent) newNumber += number.id;
+        if (!operatorPresent) 
+        if (number.id !== '.' || number.id === '.' && !newNumber.toString().includes('.')) {
+        newNumber += number.id;
+        if (screen.innerHTML.includes('Error')) screen.innerHTML = '';
         screen.innerHTML += number.id;
+        }
     });
 });
 
@@ -64,10 +79,13 @@ operators.forEach(operator => {
                 // reset variable for next number
                 newNumber = '';
             }
-            // add the operator
+            // add the operator if it's not the first value
+            if (screenValues.length !== 0) {
             screenValues.push(operator.id);
+            if (screen.innerHTML.includes('Error')) screen.innerHTML = '';
             screen.innerHTML += ` ${operator.id} `;
             operatorPresent = true;
+            }
         }
     });
 });
@@ -80,9 +98,10 @@ historyBtn.addEventListener('click', e => {
     console.log(history);
 })
 
-// add power operator to index
+
+// Implement keyboard support
 // Implement view history feature (make numpad disappear and show history on full screen)
-// Make keys flash on click
+// Add animations (Make keys flash on click)
 
 function formatExpression() {
     // remove operator if it's the last element
@@ -94,9 +113,12 @@ function evaluateExpression() {
     history.push(screenValues.join(' '));
     let result;
     while (screenValues.length !== 1) {
-        // if these operators are present, evaluate them first
-        index = [screenValues.indexOf('*'), screenValues.indexOf('/')];
-        if (index[0] !== -1 && screenValues.length > 3) {
+        // do operations in the correct order
+        index = [screenValues.indexOf('*'), screenValues.indexOf('/'), screenValues.indexOf('^')];
+        if (index[2] !== -1 && screenValues.length > 3) {
+            result = operate(screenValues[index[2] - 1], screenValues[index[2] + 1], screenValues[index[2]]);
+            screenValues.splice(index[2] - 1, 3, result);
+        } else if (index[0] !== -1 && screenValues.length > 3) {
             result = operate(screenValues[index[0] - 1], screenValues[index[0] + 1], screenValues[index[0]]);
             screenValues.splice(index[0] - 1, 3, result);
         } else if (index[1] !== -1 && screenValues.length > 3) {
@@ -107,6 +129,7 @@ function evaluateExpression() {
         result = operate(screenValues[0], screenValues[2], screenValues[1]);
         screenValues.splice(0, 3, result);
     };
+    if (!Number.isFinite(screenValues[0]) || Number.isNaN(screenValues[0])) screenValues = `Error`;
 }
 
 function clearScreen(e) {
@@ -116,8 +139,17 @@ function clearScreen(e) {
 }
 
 function updateValues() {
-    newNumber = screenValues.join();
-    screen.innerHTML = +newNumber;
+    if (screenValues.includes('Error')) {
+        screen.innerHTML = screenValues;
+        newNumber = '';
+        history.pop();
+    } else {
+        newNumber = round(+screenValues.join(), 10);
+        screen.innerHTML = +newNumber;
+        // if history array is not empty and doesn't contain a result already, add result
+        if (history.length !== 0) 
+        if (!history[history.length - 1].includes('=')) history[history.length - 1] += ` = ${+newNumber}`;
+    }
     screenValues = [];
 }
 
