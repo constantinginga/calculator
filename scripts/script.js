@@ -39,68 +39,62 @@ const numbers = document.querySelectorAll('.num');
 const operators = document.querySelectorAll('.oper');
 const equal = document.querySelector('#equal');
 const clr = document.querySelector('#clr');
-// Split screen into array
+const bkspc = document.querySelector('#bkspc');
+const historyBtn = document.querySelector('#history');
 let screenValues = screen.innerHTML.split(''),
-    newNumber = '', operatorPresent;
+    newNumber = '', operatorPresent, history = [];
+
 
 numbers.forEach(number => {
     number.addEventListener('click', e => {
         operatorPresent = false;
-        if (!operatorPresent) {
-            newNumber += number.id;
-        }
+        if (!operatorPresent) newNumber += number.id;
         screen.innerHTML += number.id;
     });
 });
 
+
 operators.forEach(operator => {
     operator.addEventListener('click', e => {
-        operatorPresent = true;
-        screenValues.push(+newNumber);
-        newNumber = '';
-        if (!(operator.id == 'clr' || operator.id == 'bkspc')) {
+        // don't allow more than one operator in a row
+        if (!operatorPresent) {
+            if (newNumber !== '') {
+                // add number to array
+                screenValues.push(+newNumber);
+                // reset variable for next number
+                newNumber = '';
+            }
+            // add the operator
             screenValues.push(operator.id);
             screen.innerHTML += ` ${operator.id} `;
+            operatorPresent = true;
         }
-        console.log(screenValues[screenValues.length - 1]);
     });
 });
 
 
-clr.addEventListener('click', e => {
-    screen.innerHTML = '';
-    screenValues = [];
-});
+clr.addEventListener('click', clearScreen);
+bkspc.addEventListener('click', removeLastValue);
+equal.addEventListener('click', calculate);
+historyBtn.addEventListener('click', e => {
+    console.log(history);
+})
 
-
-equal.addEventListener('click', e => {
-    // add last number to array
-    if (newNumber !== '' && screenValues.length !== 1) {
-        screenValues.push(+newNumber);
-    }
-    checkValidExpression();
-    console.log(screenValues);
-});
-
-// prevent user from inputting more than one operator in a row
 // add power operator to index
-// clean up code and spread into functions, remove unnecessary parantheses
 // Implement view history feature (make numpad disappear and show history on full screen)
 // Make keys flash on click
 
-function checkValidExpression() {
-    // perform calculations if an operator is present and it isn't the last value
-    if (Number.isNaN(+screenValues[screenValues.length - 1])) {
-        screenValues.pop();
-    }
-    console.log(screenValues);
-    // if there is only number, show it, else calculate
-    (screenValues.length === 1) ? screen.innerHTML = screenValues[0] : calculate();
+function formatExpression() {
+    // remove operator if it's the last element
+    if (Number.isNaN(+screenValues[screenValues.length - 1])) screenValues.pop();
 }
 
-function calculate() {
+// perform operations in the correct order
+function evaluateExpression() {
+    history.push(screenValues.join(' '));
     let result;
     while (screenValues.length !== 1) {
+        // if these operators are present, evaluate them first
         index = [screenValues.indexOf('*'), screenValues.indexOf('/')];
         if (index[0] !== -1 && screenValues.length > 3) {
             result = operate(screenValues[index[0] - 1], screenValues[index[0] + 1], screenValues[index[0]]);
@@ -109,10 +103,45 @@ function calculate() {
             result = operate(screenValues[index[1] - 1], screenValues[index[1] + 1], screenValues[index[1]]);
             screenValues.splice(index[1] - 1, 3, result);
         }
+        // replace each two operands and operator with result
         result = operate(screenValues[0], screenValues[2], screenValues[1]);
         screenValues.splice(0, 3, result);
     };
-    newNumber = result;
-    screen.innerHTML = +screenValues.join();
+}
+
+function clearScreen(e) {
+    screen.innerHTML = '';
     screenValues = [];
+    newNumber = '';
+}
+
+function updateValues() {
+    newNumber = screenValues.join();
+    screen.innerHTML = +newNumber;
+    screenValues = [];
+}
+
+function calculate(e) {
+    // add last number to array
+    if (newNumber !== '' && screenValues.length !== 1) screenValues.push(+newNumber);
+    formatExpression();
+    // if there is only number, show it, else calculate
+    (screenValues.length === 1) ? screen.innerHTML = screenValues[0] : evaluateExpression();
+    updateValues();
+}
+
+function removeLastValue(e) {
+    if (!screenValues.length) {
+        // remove last digit from number
+        newNumber = newNumber.slice(0, -1);
+        screen.innerHTML = newNumber;
+    } else {
+        if (newNumber === '') {
+            screenValues.pop();
+            operatorPresent = false;
+        } else {
+            newNumber = newNumber.slice(0, -1);
+        }
+        screen.innerHTML = `${screenValues.join(' ')} ${newNumber}`;
+    }
 }

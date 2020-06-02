@@ -1,3 +1,9 @@
+:root {
+    --orange: rgb(219, 90, 43);
+    --white: rgba(255, 255, 255, 0.9);
+    --black: rgb(24, 24, 24);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -5,32 +11,55 @@
 }
 
 html, body {
+    background-color: rgb(50, 50, 50);
     font-size: 10px;
     user-select: none;
+    font-family: 'Ubuntu', sans-serif;
 }
 
+#text {
+    text-align: center;
+    color: var(--white);
+    letter-spacing: .01rem;
+}
+
+#title {
+    font-size: 4rem;
+    margin-top: 2rem;
+}
+
+#text p {
+    font-style: italic;
+    font-size: 2rem;
+    margin-top: .5rem;
+    opacity: 0.5;
+}
 
 #calc-container {
-    margin: 100px auto;
+    border-radius: 3rem;
+    margin: 7.5rem auto;
     display: flex;
     flex-direction: column;
-    width: 600px;
-    height: 600px;
-    background: black;
+    width: 50rem;
+    height: 60rem;
+    background: var(--black);
 }
 
 #calc-screen {
     display: flex;
     align-items: flex-end;
-    background: white;
-    width: 520px;
-    height: 60px;
-    margin: 30px auto;
-    padding: 0 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    width: 42rem;
+    height: 10rem;
+    margin: 3rem auto;
+    padding: 0 1.5rem 1rem 1.5rem;
     overflow: hidden;
 }
 
 #screen {
+    color: var(--white);
+    font-weight: 600;
+    letter-spacing: 0.1rem;
     font-size: 4rem;
     width: 100%;
     overflow: hidden;
@@ -47,24 +76,47 @@ html, body {
     justify-items: stretch;
 }
 
-.oper, .num, #equal, #blank {
+.oper, .num, #equal, #history, #bkspc, #clr {
+    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 2.5rem;
+    font-weight: 600;
 }
 
-.oper, #equal, #blank {
-    background: blue;
-    color: orangered;
-    font-size: 2rem;
+.oper, #equal, #history, #clr, #bkspc {
+    color: var(--orange);
 }
 
 .num {
-    background: blue;
-    color: white;
-    font-size: 2rem;
+    color: var(--white);
+}
+
+#equal p {
+    padding: 1rem 1.8rem;
+    background: var(--orange);
+    border-radius: 50%;
+    color: var(--white);
 }
 
 
+@media (max-width: 700px) {
+    #calc-container {
+        margin: 5rem auto;
+    }
+}
+
+@media (max-width: 550px) {
+    #calc-container {
+        width: 40rem;
+        height: 50rem;
+        margin: 2.5rem auto;
+    }
+
+    #calc-screen {
+        width: 32rem;
+    }
+}
 
 

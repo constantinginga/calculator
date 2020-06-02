@@ -4,20 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <title>Calculator</title>
+    <div id="text">
+    <h1 id="title">Simple JS Calculator</h1>
+    <p>Keyboard support included!</p>
+</div>
     <div id="calc-container">
         <div id="calc-screen">
             <p id="screen"></p>
         </div>
         <div id="calc-numpad">
-            <div id="clr" class="oper">
+            <div id="clr">
                 <p>C</p>
             </div>
-            <div id="bkspc" class="oper">
-                <p><</p>
+            <div id="bkspc">
+                <p><i class="fa fa-long-arrow-left" aria-hidden="true"></i></p>
             </div>
-            <div id="^" class="oper">
-                <p>power</p>
+            <div id="**" class="oper">
+                <p>^</p>
             </div>
             <div id="/" class="oper">
                 <p>/</p>
@@ -58,8 +64,8 @@
             <div id="+" class="oper">
                 <p>+</p>
             </div>
-            <div id="blank">
-                <p>blank</p>
+            <div id="history">
+                <p><i class="fa fa-history" aria-hidden="true"></i></p>
             </div>
             <div id="0" class="num">
                 <p>0</p>
