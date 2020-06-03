@@ -1,3 +1,7 @@
+// Implement view history feature (make numpad disappear and show history on full screen)
+// Add animations (Make keys flash on click)
+
+
 function add(arr) {
     return arr.reduce((total, number) => {
         return total += number;
@@ -45,6 +49,7 @@ function operate(a, b, operator) {
         : 'Unexpected error';
 }
 
+
 const screen = document.querySelector('#screen');
 const numbers = document.querySelectorAll('.num');
 const operators = document.querySelectorAll('.oper');
@@ -53,40 +58,21 @@ const clr = document.querySelector('#clr');
 const bkspc = document.querySelector('#bkspc');
 const historyBtn = document.querySelector('#history');
 let screenValues = screen.innerHTML.split(''),
-    newNumber = '', operatorPresent, history = [];
+    newNumber = '', operatorPresent, history = [], numberId, operatorId;
 
 
 numbers.forEach(number => {
     number.addEventListener('click', e => {
-        operatorPresent = false;
-        if (!operatorPresent) 
-        if (number.id !== '.' || number.id === '.' && !newNumber.toString().includes('.')) {
-        newNumber += number.id;
-        if (screen.innerHTML.includes('Error')) screen.innerHTML = '';
-        screen.innerHTML += number.id;
-        }
+        numberId = number.id;
+        addNumber();
     });
 });
 
 
 operators.forEach(operator => {
     operator.addEventListener('click', e => {
-        // don't allow more than one operator in a row
-        if (!operatorPresent) {
-            if (newNumber !== '') {
-                // add number to array
-                screenValues.push(+newNumber);
-                // reset variable for next number
-                newNumber = '';
-            }
-            // add the operator if it's not the first value
-            if (screenValues.length !== 0) {
-            screenValues.push(operator.id);
-            if (screen.innerHTML.includes('Error')) screen.innerHTML = '';
-            screen.innerHTML += ` ${operator.id} `;
-            operatorPresent = true;
-            }
-        }
+        operatorId = operator.id;
+        addOperator();
     });
 });
 
@@ -95,18 +81,15 @@ clr.addEventListener('click', clearScreen);
 bkspc.addEventListener('click', removeLastValue);
 equal.addEventListener('click', calculate);
 historyBtn.addEventListener('click', e => {
-    console.log(history);
+    showHistory();
 })
 
-
-// Implement keyboard support
-// Implement view history feature (make numpad disappear and show history on full screen)
-// Add animations (Make keys flash on click)
 
 function formatExpression() {
     // remove operator if it's the last element
     if (Number.isNaN(+screenValues[screenValues.length - 1])) screenValues.pop();
 }
+
 
 // perform operations in the correct order
 function evaluateExpression() {
@@ -132,11 +115,13 @@ function evaluateExpression() {
     if (!Number.isFinite(screenValues[0]) || Number.isNaN(screenValues[0])) screenValues = `Error`;
 }
 
+
 function clearScreen(e) {
     screen.innerHTML = '';
     screenValues = [];
     newNumber = '';
 }
+
 
 function updateValues() {
     if (screenValues.includes('Error')) {
@@ -153,6 +138,7 @@ function updateValues() {
     screenValues = [];
 }
 
+
 function calculate(e) {
     // add last number to array
     if (newNumber !== '' && screenValues.length !== 1) screenValues.push(+newNumber);
@@ -162,10 +148,11 @@ function calculate(e) {
     updateValues();
 }
 
+
 function removeLastValue(e) {
     if (!screenValues.length) {
         // remove last digit from number
-        newNumber = newNumber.slice(0, -1);
+        newNumber = newNumber.toString().slice(0, -1);
         screen.innerHTML = newNumber;
     } else {
         if (newNumber === '') {
@@ -176,4 +163,55 @@ function removeLastValue(e) {
         }
         screen.innerHTML = `${screenValues.join(' ')} ${newNumber}`;
     }
+}
+
+// keyboard support
+window.addEventListener('keydown', e => {
+    const number = document.querySelector(`div[class="num"][id="${e.key}"]`);
+    const operator = document.querySelector(`div[class="oper"][id="${e.key}"]`);
+    if (number) {
+        numberId = number.id;
+        addNumber();
+    } else if (operator) {
+        operatorId = operator.id;
+        addOperator();
+    } else if (e.code === 'Equal') calculate();
+    else if (e.code === 'KeyC' || e.code === 'Escape') clearScreen();
+    else if (e.code === 'Backspace') removeLastValue();
+    else if (e.code === 'KeyH') showHistory();
+    else return;
+});
+
+
+function addNumber() {
+    operatorPresent = false;
+    if (!operatorPresent)
+    if (numberId !== '.' || numberId === '.' && !newNumber.toString().includes('.')) {
+        newNumber += numberId;
+        if (screen.innerHTML.includes('Error')) screen.innerHTML = '';
+        screen.innerHTML += numberId;
+    }
+}
+
+function addOperator() {
+    // don't allow more than one operator in a row
+    if (!operatorPresent) {
+        if (newNumber !== '') {
+            // add number to array
+            screenValues.push(+newNumber);
+            // reset variable for next number
+            newNumber = '';
+        }
+        // add the operator if it's not the first value
+        if (screenValues.length !== 0) {
+        screenValues.push(operatorId);
+        if (screen.innerHTML.includes('Error')) screen.innerHTML = '';
+        screen.innerHTML += ` ${operatorId} `;
+        operatorPresent = true;
+        }
+    }
+}
+
+function showHistory() {
+    console.log(history);
 }
