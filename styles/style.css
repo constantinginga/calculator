@@ -23,16 +23,28 @@ html, body {
     letter-spacing: .01rem;
 }
 
+#text p {
+    margin-top: .5rem;
+    opacity: 0.5;
+}
+
 #title {
     font-size: 4rem;
     margin-top: 2rem;
 }
 
-#text p {
+#feature {
+    font-size: 2.5rem;
+}
+
+#instructions {
+    font-size: 1.7em;
     font-style: italic;
-    font-size: 2rem;
-    margin-top: .5rem;
-    opacity: 0.5;
+    letter-spacing: .05rem;
+}
+
+.key {
+    color: var(--orange);
 }
 
 #calc-container {
@@ -91,6 +103,7 @@ html, body {
 
 .num {
     color: var(--white);
+    transition: all .15s ease-in-out;
 }
 
 #equal p {
@@ -99,7 +112,6 @@ html, body {
     border-radius: 50%;
     color: var(--white);
 }
-
 
 @media (max-width: 700px) {
     #calc-container {
@@ -117,4 +129,25 @@ html, body {
     #calc-screen {
         width: 32rem;
     }
+}
+
+@keyframes fade {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+
+.fade {
+    animation: fade .7s ease;
+}
+
+.flash {
+    transform: scale(0.9);
+    background: var(--white);
+    opacity: 0.6;
+    color: var(--black);
 }

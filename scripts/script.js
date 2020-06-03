@@ -1,5 +1,5 @@
-// Implement view history feature (make numpad disappear and show history on full screen)
-// Add animations (Make keys flash on click)
+// To-do
+// Clean up the code
 
 
 function add(arr) {
@@ -58,14 +58,18 @@ const clr = document.querySelector('#clr');
 const bkspc = document.querySelector('#bkspc');
 const historyBtn = document.querySelector('#history');
 let screenValues = screen.innerHTML.split(''),
-    newNumber = '', operatorPresent, history = [], numberId, operatorId;
+    newNumber = '', operatorPresent, history = [], numberId, operatorId, historyMode = false,
+    temp = document.querySelector('#calc-container'), btnPosition = document.getElementById('0'),
+    btnContainer = document.querySelector('#calc-numpad');
 
 
 numbers.forEach(number => {
     number.addEventListener('click', e => {
+        number.classList.add('flash');
         numberId = number.id;
         addNumber();
     });
+    number.addEventListener('transitionend', removeTransition);
 });
 
 
@@ -93,6 +97,7 @@ function formatExpression() {
 
 // perform operations in the correct order
 function evaluateExpression() {
+    if (history.length === 9) history.shift();
     history.push(screenValues.join(' '));
     let result;
     while (screenValues.length !== 1) {
@@ -146,6 +151,7 @@ function calculate(e) {
     // if there is only number, show it, else calculate
     (screenValues.length === 1) ? screen.innerHTML = screenValues[0] : evaluateExpression();
     updateValues();
+    console.log(history);
 }
 
 
@@ -170,6 +176,8 @@ window.addEventListener('keydown', e => {
     const number = document.querySelector(`div[class="num"][id="${e.key}"]`);
     const operator = document.querySelector(`div[class="oper"][id="${e.key}"]`);
     if (number) {
+        number.classList.add('flash');
+        number.addEventListener('transitionend', removeTransition);
         numberId = number.id;
         addNumber();
     } else if (operator) {
@@ -212,6 +220,51 @@ function addOperator() {
     }
 }
 
+function removeTransition(e) {
+    if (e.propertyName !== 'transform') return;
+    e.target.classList.remove('flash');
+}
+
 function showHistory() {
-    console.log(history);
+    // toggle history mode
+    (!historyMode) ? historyMode = true : historyMode = false;
+    const container = document.querySelector('#container');
+    const footer = document.querySelector('#footer');
+    // create new container for history list
+    let calcContainer = document.createElement('div');
+    calcContainer.id = 'calc-container';
+    calcContainer.classList.add('fade');
+    temp.classList.remove('fade');
+    // split container into grid with 10 rows
+    calcContainer.style.cssText = `display: grid; grid-template-rows: repeat(10, 1fr); align-items: center; padding: 1rem 3rem;`;
+    // fill grid with history elements and empty divs (if necessary)
+    let emptyDivs = 0;
+    if (history.length !== 9) emptyDivs = 9 - history.length;
+    for (let i = 0; i < history.length; i++) {
+        const historyElement = document.createElement('div');
+        historyElement.style.cssText = `color: var(--white); font-size: 3rem;`;
+        historyElement.innerHTML = history[i];
+        calcContainer.appendChild(historyElement);
+    }
+    for (let i = 0; i < emptyDivs; i++) {
+        const emptyDiv = document.createElement('div');
+        calcContainer.appendChild(emptyDiv);
+    }
+    // insert history button on the last row
+    historyBtn.style.cssText = `justify-content: left`;
+    calcContainer.appendChild(historyBtn);
+    // remove calculator and add the newly created history page
+    if (historyMode) {
+        container.removeChild(temp);
+        container.insertBefore(calcContainer, footer);    
+    }
+    // go back to calculator
+    if (!historyMode) {
+        temp.classList.add('fade');
+        calcContainer.classList.remove('fade');
+        historyBtn.style.cssText = `justify-content: center`;
+        btnContainer.insertBefore(historyBtn, btnPosition);
+        container.removeChild(document.querySelector('#calc-container'));
+        container.insertBefore(temp, footer);
+    }
 }
