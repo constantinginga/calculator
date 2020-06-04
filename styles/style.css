@@ -2,6 +2,7 @@
     --orange: rgb(219, 90, 43);
     --white: rgba(255, 255, 255, 0.9);
     --black: rgb(24, 24, 24);
+    --border-white: rgba(255, 255, 255, 0.2);
 }
 
 * {
@@ -25,7 +26,7 @@ html, body {
 
 #text p {
     margin-top: .5rem;
-    opacity: 0.5;
+    opacity: 0.6;
 }
 
 #title {
@@ -38,7 +39,7 @@ html, body {
 }
 
 #instructions {
-    font-size: 1.7em;
+    font-size: 1.7rem;
     font-style: italic;
     letter-spacing: .05rem;
 }
@@ -60,7 +61,7 @@ html, body {
 #calc-screen {
     display: flex;
     align-items: flex-end;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid var(--border-white);
     width: 42rem;
     height: 10rem;
     margin: 3rem auto;
@@ -113,6 +114,17 @@ html, body {
     color: var(--white);
 }
 
+.fade {
+    animation: fade .7s ease;
+}
+
+.flash {
+    transform: scale(0.9);
+    background: var(--white);
+    opacity: 0.6;
+    color: var(--black);
+}
+
 @media (max-width: 700px) {
     #calc-container {
         margin: 5rem auto;
@@ -138,16 +150,4 @@ html, body {
     100% {
         opacity: 1;
     }
-}
-
-
-.fade {
-    animation: fade .7s ease;
-}
-
-.flash {
-    transform: scale(0.9);
-    background: var(--white);
-    opacity: 0.6;
-    color: var(--black);
 }

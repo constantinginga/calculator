@@ -1,7 +1,3 @@
-// To-do
-// Clean up the code
-
-
 function add(arr) {
     return arr.reduce((total, number) => {
         return total += number;
@@ -50,17 +46,24 @@ function operate(a, b, operator) {
 }
 
 
-const screen = document.querySelector('#screen');
-const numbers = document.querySelectorAll('.num');
-const operators = document.querySelectorAll('.oper');
-const equal = document.querySelector('#equal');
-const clr = document.querySelector('#clr');
-const bkspc = document.querySelector('#bkspc');
-const historyBtn = document.querySelector('#history');
+const screen = document.querySelector('#screen'),
+    numbers = document.querySelectorAll('.num'),
+    operators = document.querySelectorAll('.oper'),
+    equal = document.querySelector('#equal'),
+    clr = document.querySelector('#clr'),
+    bkspc = document.querySelector('#bkspc'),
+    historyBtn = document.querySelector('#history');
 let screenValues = screen.innerHTML.split(''),
     newNumber = '', operatorPresent, history = [], numberId, operatorId, historyMode = false,
-    temp = document.querySelector('#calc-container'), btnPosition = document.getElementById('0'),
+    temp = document.querySelector('#calc-container'),
+    btnPosition = document.getElementById('0'),
     btnContainer = document.querySelector('#calc-numpad');
+
+
+clr.addEventListener('click', clearScreen);
+bkspc.addEventListener('click', removeLastValue);
+equal.addEventListener('click', calculate);
+historyBtn.addEventListener('click', e => showHistory());
 
 
 numbers.forEach(number => {
@@ -81,26 +84,22 @@ operators.forEach(operator => {
 });
 
 
-clr.addEventListener('click', clearScreen);
-bkspc.addEventListener('click', removeLastValue);
-equal.addEventListener('click', calculate);
-historyBtn.addEventListener('click', e => {
-    showHistory();
-})
-
-
+// remove operator if it's the last element
 function formatExpression() {
-    // remove operator if it's the last element
     if (Number.isNaN(+screenValues[screenValues.length - 1])) screenValues.pop();
 }
 
 
 // perform operations in the correct order
 function evaluateExpression() {
-    if (history.length === 9) history.shift();
-    history.push(screenValues.join(' '));
+    if (screenValues.length != 0) {
+        // if max history length, remove the oldest expression
+        if (history.length === 9) history.shift();
+        // add new expression to array
+        history.push(screenValues.join(' '));
+    }
     let result;
-    while (screenValues.length !== 1) {
+    while (screenValues.length > 1) {
         // do operations in the correct order
         index = [screenValues.indexOf('*'), screenValues.indexOf('/'), screenValues.indexOf('^')];
         if (index[2] !== -1 && screenValues.length > 3) {
@@ -117,7 +116,8 @@ function evaluateExpression() {
         result = operate(screenValues[0], screenValues[2], screenValues[1]);
         screenValues.splice(0, 3, result);
     };
-    if (!Number.isFinite(screenValues[0]) || Number.isNaN(screenValues[0])) screenValues = `Error`;
+    // prevent division by zero
+    if ((!Number.isFinite(screenValues[0]) || Number.isNaN(screenValues[0])) && screenValues.length != 0) screenValues = `Error`;
 }
 
 
@@ -129,16 +129,19 @@ function clearScreen(e) {
 
 
 function updateValues() {
+    // if there's an error, show it and remove from history
     if (screenValues.includes('Error')) {
         screen.innerHTML = screenValues;
         newNumber = '';
         history.pop();
     } else {
-        newNumber = round(+screenValues.join(), 10);
-        screen.innerHTML = +newNumber;
+        if (screenValues.length != 0) 
+        (screenValues.includes('.')) ? newNumber = round(+screenValues.join(), 10) : newNumber = screenValues[0];
+        if (newNumber.toString().length > 10) newNumber = newNumber.toExponential(5);
+        screen.innerHTML = newNumber;
         // if history array is not empty and doesn't contain a result already, add result
-        if (history.length !== 0) 
-        if (!history[history.length - 1].includes('=')) history[history.length - 1] += ` = ${+newNumber}`;
+        if (history.length !== 0 && screenValues.length != 0) 
+        if (!history[history.length - 1].includes('=')) history[history.length - 1] += ` = ${newNumber}`;
     }
     screenValues = [];
 }
@@ -151,28 +154,33 @@ function calculate(e) {
     // if there is only number, show it, else calculate
     (screenValues.length === 1) ? screen.innerHTML = screenValues[0] : evaluateExpression();
     updateValues();
-    console.log(history);
 }
 
 
+// backspace functionality
 function removeLastValue(e) {
     if (!screenValues.length) {
         // remove last digit from number
         newNumber = newNumber.toString().slice(0, -1);
         screen.innerHTML = newNumber;
     } else {
+        // if the screen has more than one value
         if (newNumber === '') {
+            // if it's an operator, remove it and allow for another one
             screenValues.pop();
             operatorPresent = false;
         } else {
+            // if it's a number, remove its last digit
             newNumber = newNumber.slice(0, -1);
         }
         screen.innerHTML = `${screenValues.join(' ')} ${newNumber}`;
     }
 }
 
+
 // keyboard support
 window.addEventListener('keydown', e => {
+    // select correct number or operator
     const number = document.querySelector(`div[class="num"][id="${e.key}"]`);
     const operator = document.querySelector(`div[class="oper"][id="${e.key}"]`);
     if (number) {
@@ -194,12 +202,13 @@ window.addEventListener('keydown', e => {
 function addNumber() {
     operatorPresent = false;
     if (!operatorPresent)
-    if (numberId !== '.' || numberId === '.' && !newNumber.toString().includes('.')) {
+    if (numberId !== '.' || numberId === '.' && !newNumber.toString().includes('.') && newNumber.toString().length != 0) {
         newNumber += numberId;
         if (screen.innerHTML.includes('Error')) screen.innerHTML = '';
         screen.innerHTML += numberId;
     }
 }
+
 
 function addOperator() {
     // don't allow more than one operator in a row
@@ -220,16 +229,19 @@ function addOperator() {
     }
 }
 
+
 function removeTransition(e) {
     if (e.propertyName !== 'transform') return;
     e.target.classList.remove('flash');
 }
 
+
+// history functionality
 function showHistory() {
     // toggle history mode
     (!historyMode) ? historyMode = true : historyMode = false;
-    const container = document.querySelector('#container');
-    const footer = document.querySelector('#footer');
+    const body = document.getElementsByTagName('body')[0];
+    const script = document.getElementsByTagName('script')[0];
     // create new container for history list
     let calcContainer = document.createElement('div');
     calcContainer.id = 'calc-container';
@@ -242,7 +254,7 @@ function showHistory() {
     if (history.length !== 9) emptyDivs = 9 - history.length;
     for (let i = 0; i < history.length; i++) {
         const historyElement = document.createElement('div');
-        historyElement.style.cssText = `color: var(--white); font-size: 3rem;`;
+        historyElement.style.cssText = `color: var(--white); font-size: 3rem; padding: .5rem; border-bottom: 1px solid var(--border-white);`;
         historyElement.innerHTML = history[i];
         calcContainer.appendChild(historyElement);
     }
@@ -255,8 +267,8 @@ function showHistory() {
     calcContainer.appendChild(historyBtn);
     // remove calculator and add the newly created history page
     if (historyMode) {
-        container.removeChild(temp);
-        container.insertBefore(calcContainer, footer);    
+        body.removeChild(temp);
+        body.insertBefore(calcContainer, script);    
     }
     // go back to calculator
     if (!historyMode) {
@@ -264,7 +276,7 @@ function showHistory() {
         calcContainer.classList.remove('fade');
         historyBtn.style.cssText = `justify-content: center`;
         btnContainer.insertBefore(historyBtn, btnPosition);
-        container.removeChild(document.querySelector('#calc-container'));
-        container.insertBefore(temp, footer);
+        body.removeChild(document.querySelector('#calc-container'));
+        body.insertBefore(temp, script);
     }
 }
